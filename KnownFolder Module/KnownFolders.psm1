@@ -147,8 +147,8 @@ function Get-KnownFolder {
     }
 
     $ptr = [intptr]::Zero
-    $result = $Type::SHGetKnownFolderPath([ref]$KnownFolders[$KnownFolder], $Flag, 0, [ref]$ptr)
-    if ($result -eq 0) {
+    $return = $Type::SHGetKnownFolderPath([ref]$KnownFolders[$KnownFolder], $Flag, 0, [ref]$ptr)
+    if ($return -eq 0) {
         $path = [System.Runtime.InteropServices.Marshal]::PtrToStringUni($ptr)
         [System.Runtime.InteropServices.Marshal]::FreeCoTaskMem($ptr)
     } else {
@@ -169,10 +169,18 @@ function Get-KnownFolderPath {
     .PARAMETER KnownFolder
         The known folder requested.
 
+    .PARAMETER Create
+        Indicates if the folder should be created if it dos not exist.
+
     .EXAMPLE
         Returns the path of the users download folders.
 
         Get-KnownFolderPath -KnownFolder Download
+
+    .EXAMPLE
+        Returns the path of the users Music folder and if it does not exist create it.
+
+        Get-KnownFolderPath -KnownFolder Music -Create:$true
 
     .LINK
         Get-KnownFolderExpandedPath
@@ -181,18 +189,25 @@ function Get-KnownFolderPath {
         Set-KnownFolderPath
         Set-KnownFolderExpandedPath
         Set-KnownFolderPathDefault
-        New-KnownFolderPath
-        New-KnownFolderExpandedPath
         Move-KnownFolderPath
         Move-KnownFolderExpandedPath
     #>
     Param (
         [Parameter(Mandatory = $true)]
         [ValidateSet('AccountPictures', 'AdminTools', 'AppDataDesktop', 'AppDataDocuments', 'AppDataFavorites', 'AppDataProgramData', 'ApplicationShortcuts', 'CameraRoll', 'CameraRollLibrary', 'CDBurning', 'CommonAdminTools', 'CommonOEMLinks', 'CommonPrograms', 'CommonRingtones', 'CommonStartMenu', 'CommonStartMenuPlaces', 'CommonStartup', 'CommonTemplates', 'Contacts', 'Cookies', 'DeviceMetadataStore', 'Desktop', 'DesktopLocalized', 'Documents', 'DocumentsLocalized', 'DocumentsLibrary', 'Downloads', 'DownloadsLocalized', 'Favorites', 'Fonts', 'GameTasks', 'History', 'ImplicitAppShortcuts', 'InternetCache', 'Libraries', 'Links', 'LocalAppData', 'LocalAppDataLow', 'LocalizedResourcesDir', 'Music', 'MusicLocalized', 'MusicLibrary', 'NetHood', 'Objects3D', 'OneDrive', 'OneDriveCameraRoll', 'OneDriveDocuments', 'OneDriveMusic', 'OneDrivePictures', 'OriginalImages', 'PhotoAlbums', 'Pictures', 'PicturesLocalized', 'PicturesLibrary', 'Playlists', 'PrintHood', 'Profile', 'ProgramData', 'ProgramFiles', 'ProgramFilesX64', 'ProgramFilesX86', 'ProgramFilesCommon', 'ProgramFilesCommonX64', 'ProgramFilesCommonX86', 'Programs', 'Public', 'PublicAccountPictures', 'PublicDesktop', 'PublicDocuments', 'PublicDownloads', 'PublicGameTasks', 'PublicLibraries', 'PublicMusic', 'PublicPictures', 'PublicVideos', 'QuickLaunch', 'Recent', 'RecordedCalls', 'RecordedTVLibrary', 'ResourceDir', 'RetailDemo', 'Ringtones', 'RoamingAppData', 'RoamingTiles', 'SampleMusic', 'SamplePictures', 'SamplePlaylists', 'SampleVideos', 'SavedGames', 'SavedPictures', 'SavedPicturesLibrary', 'SavedSearches', 'SearchHistoryFolder', 'SearchTemplatesFolder', 'SendTo', 'SidebarDefaultParts', 'SidebarParts', 'StartMenu', 'Startup', 'System', 'SystemX86', 'Templates', 'ThisPCDesktopFolder', 'UserPinned', 'UserProfiles', 'UserProgramFiles', 'Videos', 'VideosLocalized', 'VideosLibrary', 'Windows')]
-        [string]$KnownFolder
+        [string]$KnownFolder,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$Create=$false
     )
 
-    return Get-KnownFolder -KnownFolder $KnownFolder -Flag ([KnownFoldersFlags]::DontVerify.value__)
+    if ($Create) {
+        $flag = ([KnownFoldersFlags]::Init.value__) -bor ([KnownFoldersFlags]::Create.value__)
+    } else {
+        $flag = [KnownFoldersFlags]::DontVerify.value__
+    }
+
+    return Get-KnownFolder -KnownFolder $KnownFolder -Flag $flag
 }
 
 function Get-KnownFolderExpandedPath {
@@ -206,10 +221,18 @@ function Get-KnownFolderExpandedPath {
     .PARAMETER KnownFolder
         The known folder requested.
 
+    .PARAMETER Create
+        Indicates if the folder should be created if it dos not exist.
+
     .EXAMPLE
         Returns the path of the users download folders.
 
         Get-KnownFolderExpandedPath -KnownFolder Download
+
+    .EXAMPLE
+        Returns the path of the users Music folder and if it does not exist create it.
+
+        Get-KnownFolderExpandedPath -KnownFolder Music -Create:$true
 
     .LINK
         Get-KnownFolderPath
@@ -218,18 +241,25 @@ function Get-KnownFolderExpandedPath {
         Set-KnownFolderPath
         Set-KnownFolderExpandedPath
         Set-KnownFolderPathDefault
-        New-KnownFolderPath
-        New-KnownFolderExpandedPath
         Move-KnownFolderPath
         Move-KnownFolderExpandedPath
     #>
     Param (
         [Parameter(Mandatory = $true)]
         [ValidateSet('AccountPictures', 'AdminTools', 'AppDataDesktop', 'AppDataDocuments', 'AppDataFavorites', 'AppDataProgramData', 'ApplicationShortcuts', 'CameraRoll', 'CameraRollLibrary', 'CDBurning', 'CommonAdminTools', 'CommonOEMLinks', 'CommonPrograms', 'CommonRingtones', 'CommonStartMenu', 'CommonStartMenuPlaces', 'CommonStartup', 'CommonTemplates', 'Contacts', 'Cookies', 'DeviceMetadataStore', 'Desktop', 'DesktopLocalized', 'Documents', 'DocumentsLocalized', 'DocumentsLibrary', 'Downloads', 'DownloadsLocalized', 'Favorites', 'Fonts', 'GameTasks', 'History', 'ImplicitAppShortcuts', 'InternetCache', 'Libraries', 'Links', 'LocalAppData', 'LocalAppDataLow', 'LocalizedResourcesDir', 'Music', 'MusicLocalized', 'MusicLibrary', 'NetHood', 'Objects3D', 'OneDrive', 'OneDriveCameraRoll', 'OneDriveDocuments', 'OneDriveMusic', 'OneDrivePictures', 'OriginalImages', 'PhotoAlbums', 'Pictures', 'PicturesLocalized', 'PicturesLibrary', 'Playlists', 'PrintHood', 'Profile', 'ProgramData', 'ProgramFiles', 'ProgramFilesX64', 'ProgramFilesX86', 'ProgramFilesCommon', 'ProgramFilesCommonX64', 'ProgramFilesCommonX86', 'Programs', 'Public', 'PublicAccountPictures', 'PublicDesktop', 'PublicDocuments', 'PublicDownloads', 'PublicGameTasks', 'PublicLibraries', 'PublicMusic', 'PublicPictures', 'PublicVideos', 'QuickLaunch', 'Recent', 'RecordedCalls', 'RecordedTVLibrary', 'ResourceDir', 'RetailDemo', 'Ringtones', 'RoamingAppData', 'RoamingTiles', 'SampleMusic', 'SamplePictures', 'SamplePlaylists', 'SampleVideos', 'SavedGames', 'SavedPictures', 'SavedPicturesLibrary', 'SavedSearches', 'SearchHistoryFolder', 'SearchTemplatesFolder', 'SendTo', 'SidebarDefaultParts', 'SidebarParts', 'StartMenu', 'Startup', 'System', 'SystemX86', 'Templates', 'ThisPCDesktopFolder', 'UserPinned', 'UserProfiles', 'UserProgramFiles', 'Videos', 'VideosLocalized', 'VideosLibrary', 'Windows')]
-        [string]$KnownFolder
+        [string]$KnownFolder,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$Create=$false
     )
 
-    return Get-KnownFolder -KnownFolder $KnownFolder -Flag (([KnownFoldersFlags]::DontVerify.value__) -bor ([KnownFoldersFlags]::NoAlias.value__))
+    if ($Create) {
+        $flag = ([KnownFoldersFlags]::Init.value__) -bor ([KnownFoldersFlags]::Create.value__) -bor ([KnownFoldersFlags]::NoAlias.value__)
+    } else {
+        $flag = ([KnownFoldersFlags]::DontVerify.value__) -bor ([KnownFoldersFlags]::NoAlias.value__)
+    }
+
+    return Get-KnownFolder -KnownFolder $KnownFolder -Flag $flag
 }
 
 function Get-KnownFolderPathDefault {
@@ -255,8 +285,6 @@ function Get-KnownFolderPathDefault {
         Set-KnownFolderPath
         Set-KnownFolderExpandedPath
         Set-KnownFolderPathDefault
-        New-KnownFolderPath
-        New-KnownFolderExpandedPath
         Move-KnownFolderPath
         Move-KnownFolderExpandedPath
     #>
@@ -344,18 +372,27 @@ function Set-KnownFolderPath {
     
     .DESCRIPTION
         Set-KnownFolderPath sets the path of a known folder. It's not nessesary that the path already exist.
+        For common known folders elevated privileges are required.
 
     .PARAMETER KnownFolder
         The known folder to be set.
 
     .PARAMETER Path
         The path to which should be set for the known folder.
+
+    .PARAMETER Create
+        Indicates if the folder should be created if it dos not exist.
 
     .EXAMPLE
         Sets the path of the users download folder to C:\Download.
 
         Set-KnownFolderPath -KnownFolder Download -Path 'C:\Donwnload'
 
+    .EXAMPLE
+        Sets the path of the users Music folder and if it does not exist create it.
+
+        Set-KnownFolderPath -KnownFolder Music -Path 'C:\My Music' -Create:$true
+
     .LINK
         Get-KnownFolderPath
         Get-KnownFolderExpandedPath
@@ -363,8 +400,6 @@ function Set-KnownFolderPath {
         Get-KnownFolderExpandedPathDefault
         Set-KnownFolderExpandedPath
         Set-KnownFolderPathDefault
-        New-KnownFolderPath
-        New-KnownFolderExpandedPath
         Move-KnownFolderPath
         Move-KnownFolderExpandedPath
     #>
@@ -374,86 +409,58 @@ function Set-KnownFolderPath {
         [string]$KnownFolder,
 
         [Parameter(Mandatory = $true)]
-        [string]$Path
+        [string]$Path,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$Create=$false
     )
 
-    return Set-KnownFolder -KnownFolder $KnownFolder -Flag ([KnownFoldersFlags]::None.value__) -Path $Path
+    $return = Set-KnownFolder -KnownFolder $KnownFolder -Flag ([KnownFoldersFlags]::None.value__) -Path $Path
+
+    if ($return -eq 0 -and $Create) {
+        Get-KnownFolderPath -KnownFolder $KnownFolder -Create:$true
+    }
+
+    return $return
 }
 
-function Set-KnownFolderExpandedPath {
+function Set-KnownFolderExpandPath {
     <#
     .SYNOPSIS
         Sets the the path of a known folder.
     
     .DESCRIPTION
-        Set-KnownFolderExpandedPath sets the path of a known folder. It's not nessesary that the path already exist.
+        Set-KnownFolderExpandPath sets the path of a known folder. It's not nessesary that the path already exist.
+        For common known folders elevated privileges are required.
 
     .PARAMETER KnownFolder
         The known folder to be set.
 
     .PARAMETER Path
         The path to which should be set for the known folder.
+
+    .PARAMETER Create
+        Indicates if the folder should be created if it dos not exist.
 
     .EXAMPLE
         Sets the path of the users download folder to C:\Download using the envoirement variable SystemDrive.
 
-        Set-KnownFolderExpandedPath -KnownFolder Download -Path '%SystemDrive%\Donwnload'
-
-    .LINK
-        Get-KnownFolderPath
-        Get-KnownFolderExpandedPath
-        Get-KnownFolderPathDefault
-        Get-KnownFolderExpandedPathDefault
-        Set-KnownFolderPath
-        Set-KnownFolderPathDefault
-        New-KnownFolderPath
-        New-KnownFolderExpandedPath
-        Move-KnownFolderPath
-        Move-KnownFolderExpandedPath
-    #>
-    Param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('AccountPictures', 'AdminTools', 'AppDataDesktop', 'AppDataDocuments', 'AppDataFavorites', 'AppDataProgramData', 'ApplicationShortcuts', 'CameraRoll', 'CameraRollLibrary', 'CDBurning', 'CommonAdminTools', 'CommonOEMLinks', 'CommonPrograms', 'CommonRingtones', 'CommonStartMenu', 'CommonStartMenuPlaces', 'CommonStartup', 'CommonTemplates', 'Contacts', 'Cookies', 'DeviceMetadataStore', 'Desktop', 'DesktopLocalized', 'Documents', 'DocumentsLocalized', 'DocumentsLibrary', 'Downloads', 'DownloadsLocalized', 'Favorites', 'GameTasks', 'History', 'ImplicitAppShortcuts', 'InternetCache', 'Libraries', 'Links', 'LocalAppData', 'LocalAppDataLow', 'Music', 'MusicLocalized', 'MusicLibrary', 'NetHood', 'Objects3D', 'OneDrive', 'OneDriveCameraRoll', 'OneDriveDocuments', 'OneDriveMusic', 'OneDrivePictures', 'OriginalImages', 'PhotoAlbums', 'Pictures', 'PicturesLocalized', 'PicturesLibrary', 'Playlists', 'PrintHood', 'Programs', 'PublicAccountPictures', 'PublicDesktop', 'PublicDocuments', 'PublicDownloads', 'PublicGameTasks', 'PublicLibraries', 'PublicMusic', 'PublicPictures', 'PublicVideos', 'QuickLaunch', 'Recent', 'RecordedCalls', 'RecordedTVLibrary', 'RetailDemo', 'Ringtones', 'RoamingAppData', 'RoamingTiles', 'SampleMusic', 'SamplePictures', 'SamplePlaylists', 'SampleVideos', 'SavedGames', 'SavedPictures', 'SavedPicturesLibrary', 'SavedSearches', 'SearchHistoryFolder', 'SearchTemplatesFolder', 'SendTo', 'SidebarDefaultParts', 'SidebarParts', 'StartMenu', 'Startup', 'Templates', 'ThisPCDesktopFolder', 'UserPinned', 'UserProgramFiles', 'Videos', 'VideosLocalized', 'VideosLibrary')]
-        [string]$KnownFolder,
-
-        [Parameter(Mandatory = $true)]
-        [string]$Path
-    )
-
-    return Set-KnownFolder -KnownFolder $KnownFolder -Flag ([KnownFoldersFlags]::DontUnexpand.value__) -Path $Path
-}
-
-function New-KnownFolderPath {
-    <#
-    .SYNOPSIS
-        Sets the the path of a known folder and creats it if it dos not already exist.
-    
-    .DESCRIPTION
-        New-KnownFolderPath sets the path of a known folder and creates the path if it dos not already exist.
-        It also creates the desktop.ini file for the folder if nessesary.
-
-    .PARAMETER KnownFolder
-        The known folder to be set.
-
-    .PARAMETER Path
-        The path to which should be set for the known folder.
+        Set-KnownFolderExpandPath -KnownFolder Download -Path '%SystemDrive%\Donwnload'
 
     .EXAMPLE
-        Sets the path of the users download folder to C:\Download and creates the folder.
+        Sets the path of the users Music folder and if it does not exist create it.
 
-        New-KnownFolderPath -KnownFolder Download -Path 'C:\Donwnload'
+        Set-KnownFolderExtendedPath -KnownFolder Music -Path '%SystemDrive%\My Music' -Create:$true
 
     .LINK
         Get-KnownFolderPath
-        Get-KnownFolderExpandedPath
+        Get-KnownFolderExpandPath
         Get-KnownFolderPathDefault
-        Get-KnownFolderExpandedPathDefault
+        Get-KnownFolderExpandPathDefault
         Set-KnownFolderPath
-        Set-KnownFolderExpandedPath
         Set-KnownFolderPathDefault
-        New-KnownFolderExpandedPath
         Move-KnownFolderPath
-        Move-KnownFolderExpandedPath
+        Move-KnownFolderExpandPath
     #>
     Param (
         [Parameter(Mandatory = $true)]
@@ -461,63 +468,19 @@ function New-KnownFolderPath {
         [string]$KnownFolder,
 
         [Parameter(Mandatory = $true)]
-        [string]$Path
+        [string]$Path,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$Create=$false
     )
 
-    $return = Set-KnownFolderPath -KnownFolder $KnownFolder -Path $Path
-    if ($return -eq 0) {
-        return Get-KnownFolder -KnownFolder $KnownFolder -Flag (([KnownFoldersFlags]::Init.value__) -bor ([KnownFoldersFlags]::Create.value__))
-    } else {
-        Throw "Cannot set the known folder path. It may not be available on this system."
+    $return = Set-KnownFolder -KnownFolder $KnownFolder -Flag ([KnownFoldersFlags]::DontUnexpand.value__) -Path $Path
+
+    if ($return -eq 0 -and $Create) {
+        Get-KnownFolderPath -KnownFolder $KnownFolder -Create:$true
     }
-}
 
-function New-KnownFolderExpandedPath {
-    <#
-    .SYNOPSIS
-        Sets the the path of a known folder and creates it if it dos not already exist.
-    
-    .DESCRIPTION
-        New-KnownFolderExpandedPath sets the path of a known folder. It's not nessesary that the path already exist.
-
-    .PARAMETER KnownFolder
-        The known folder to be set.
-
-    .PARAMETER Path
-        The path to which should be set for the known folder.
-
-    .EXAMPLE
-        Sets the path of the users download folder to C:\Download using envoirement variables and creates it.
-
-        New-KnownFolderExpandedPath -KnownFolder Download -Path '%SystemDrive%\Donwnload'
-
-    .LINK
-        Get-KnownFolderPath
-        Get-KnownFolderExpandedPath
-        Get-KnownFolderPathDefault
-        Get-KnownFolderExpandedPathDefault
-        Set-KnownFolderPath
-        Set-KnownFolderExpandedPath
-        Set-KnownFolderPathDefault
-        New-KnownFolderPath
-        Move-KnownFolderPath
-        Move-KnownFolderExpandedPath
-    #>
-    Param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('AccountPictures', 'AdminTools', 'AppDataDesktop', 'AppDataDocuments', 'AppDataFavorites', 'AppDataProgramData', 'ApplicationShortcuts', 'CameraRoll', 'CameraRollLibrary', 'CDBurning', 'CommonAdminTools', 'CommonOEMLinks', 'CommonPrograms', 'CommonRingtones', 'CommonStartMenu', 'CommonStartMenuPlaces', 'CommonStartup', 'CommonTemplates', 'Contacts', 'Cookies', 'DeviceMetadataStore', 'Desktop', 'DesktopLocalized', 'Documents', 'DocumentsLocalized', 'DocumentsLibrary', 'Downloads', 'DownloadsLocalized', 'Favorites', 'GameTasks', 'History', 'ImplicitAppShortcuts', 'InternetCache', 'Libraries', 'Links', 'LocalAppData', 'LocalAppDataLow', 'Music', 'MusicLocalized', 'MusicLibrary', 'NetHood', 'Objects3D', 'OneDrive', 'OneDriveCameraRoll', 'OneDriveDocuments', 'OneDriveMusic', 'OneDrivePictures', 'OriginalImages', 'PhotoAlbums', 'Pictures', 'PicturesLocalized', 'PicturesLibrary', 'Playlists', 'PrintHood', 'Programs', 'PublicAccountPictures', 'PublicDesktop', 'PublicDocuments', 'PublicDownloads', 'PublicGameTasks', 'PublicLibraries', 'PublicMusic', 'PublicPictures', 'PublicVideos', 'QuickLaunch', 'Recent', 'RecordedCalls', 'RecordedTVLibrary', 'RetailDemo', 'Ringtones', 'RoamingAppData', 'RoamingTiles', 'SampleMusic', 'SamplePictures', 'SamplePlaylists', 'SampleVideos', 'SavedGames', 'SavedPictures', 'SavedPicturesLibrary', 'SavedSearches', 'SearchHistoryFolder', 'SearchTemplatesFolder', 'SendTo', 'SidebarDefaultParts', 'SidebarParts', 'StartMenu', 'Startup', 'Templates', 'ThisPCDesktopFolder', 'UserPinned', 'UserProgramFiles', 'Videos', 'VideosLocalized', 'VideosLibrary')]
-        [string]$KnownFolder,
-
-        [Parameter(Mandatory = $true)]
-        [string]$Path
-    )
-
-    $return = Set-KnownFolderExpandPath -KnownFolder $KnownFolder -Path $Path
-    if ($return -eq 0) {
-        return Get-KnownFolder -KnownFolder $KnownFolder -Flag (([KnownFoldersFlags]::Init.value__) -bor ([KnownFoldersFlags]::Create.value__))
-    } else {
-        Throw "Cannot set the known folder path. It may not be available on this system."
-    }
+    return $return
 }
 
 function Set-KnownFolderPathDefault {
@@ -527,14 +490,23 @@ function Set-KnownFolderPathDefault {
     
     .DESCRIPTION
         Set-KnownFolderPathDefault sets the path of a known folder to it's default location.
+        For common known folders elevated privileges are required.
 
     .PARAMETER KnownFolder
         The known folder to be set.
+
+    .PARAMETER Create
+        Indicates if the folder should be created if it dos not exist.
 
     .EXAMPLE
         Sets the path of the users download folder to it's default location.
 
         Set-KnownFolderPathDefault -KnownFolder Download
+
+    .EXAMPLE
+        Sets the path of the users Music folder to it's default location and if it does not exist create it.
+
+        Set-KnownFolderPathDefault -KnownFolder Music -Create:$true
 
     .LINK
         Get-KnownFolderPath
@@ -543,18 +515,25 @@ function Set-KnownFolderPathDefault {
         Get-KnownFolderExpandedPathDefault
         Set-KnownFolderPath
         Set-KnownFolderExpandedPath
-        New-KnownFolderPath
-        New-KnownFolderExpandedPath
         Move-KnownFolderPath
         Move-KnownFolderExpandedPath
     #>
     Param (
         [Parameter(Mandatory = $true)]
         [ValidateSet('AccountPictures', 'AdminTools', 'AppDataDesktop', 'AppDataDocuments', 'AppDataFavorites', 'AppDataProgramData', 'ApplicationShortcuts', 'CameraRoll', 'CameraRollLibrary', 'CDBurning', 'CommonAdminTools', 'CommonOEMLinks', 'CommonPrograms', 'CommonRingtones', 'CommonStartMenu', 'CommonStartMenuPlaces', 'CommonStartup', 'CommonTemplates', 'Contacts', 'Cookies', 'DeviceMetadataStore', 'Desktop', 'DesktopLocalized', 'Documents', 'DocumentsLocalized', 'DocumentsLibrary', 'Downloads', 'DownloadsLocalized', 'Favorites', 'GameTasks', 'History', 'ImplicitAppShortcuts', 'InternetCache', 'Libraries', 'Links', 'LocalAppData', 'LocalAppDataLow', 'Music', 'MusicLocalized', 'MusicLibrary', 'NetHood', 'Objects3D', 'OneDrive', 'OneDriveCameraRoll', 'OneDriveDocuments', 'OneDriveMusic', 'OneDrivePictures', 'OriginalImages', 'PhotoAlbums', 'Pictures', 'PicturesLocalized', 'PicturesLibrary', 'Playlists', 'PrintHood', 'Programs', 'PublicAccountPictures', 'PublicDesktop', 'PublicDocuments', 'PublicDownloads', 'PublicGameTasks', 'PublicLibraries', 'PublicMusic', 'PublicPictures', 'PublicVideos', 'QuickLaunch', 'Recent', 'RecordedCalls', 'RecordedTVLibrary', 'RetailDemo', 'Ringtones', 'RoamingAppData', 'RoamingTiles', 'SampleMusic', 'SamplePictures', 'SamplePlaylists', 'SampleVideos', 'SavedGames', 'SavedPictures', 'SavedPicturesLibrary', 'SavedSearches', 'SearchHistoryFolder', 'SearchTemplatesFolder', 'SendTo', 'SidebarDefaultParts', 'SidebarParts', 'StartMenu', 'Startup', 'Templates', 'ThisPCDesktopFolder', 'UserPinned', 'UserProgramFiles', 'Videos', 'VideosLocalized', 'VideosLibrary')]
-        [string]$KnownFolder
+        [string]$KnownFolder,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$Create=$false
     )
 
-    Set-KnownFolder -KnownFolder $KnownFolder -Flag ([KnownFoldersFlags]::DontUnexpand.value__) -Path (Get-KnownFolderExpandePathDefault -KnownFolder $KnownFolder)
+    $return = Set-KnownFolder -KnownFolder $KnownFolder -Flag ([KnownFoldersFlags]::DontUnexpand.value__) -Path (Get-KnownFolderExpandePathDefault -KnownFolder $KnownFolder)
+
+    if ($return -eq 0 -and $Create) {
+        Get-KnownFolderPath -KnownFolder $KnownFolder -Create:$true
+    }
+
+    return $return
 }
 
 function Move-Directory {
@@ -612,8 +591,6 @@ function Move-KnownFolderPath {
         Set-KnownFolderPath
         Set-KnownFolderExpandedPath
         Set-KnownFolderPathDefault
-        New-KnownFolderPath
-        New-KnownFolderExpandedPath
         Move-KnownFolderExpandedPath
     #>
     Param (
@@ -629,10 +606,10 @@ function Move-KnownFolderPath {
     if ($curPath -ne $null -and $curPath.length > 0) {
         if ($curPath -ne $Path) {
             Move-Directory -Source $curPath -Destination $Path
-            New-KnownFolderPath -KnownFolder $KnownFolder -Path $Path
+            Set-KnownFolderPath -KnownFolder $KnownFolder -Path $Path -Create:$true
         }
     } else {
-        New-KnownFolderPath -KnownFolder $KnownFolder -Path $Path
+        Set-KnownFolderPath -KnownFolder $KnownFolder -Path $Path -Create:$true
     }
 }
 
@@ -664,8 +641,6 @@ function Move-KnownFolderExpandedPath {
         Set-KnownFolderPath
         Set-KnownFolderExpandedPath
         Set-KnownFolderPathDefault
-        New-KnownFolderPath
-        New-KnownFolderExpandedPath
         Move-KnownFolderPath
     #>
     Param (
@@ -681,17 +656,17 @@ function Move-KnownFolderExpandedPath {
     if ($curPath -ne $null -and $curPath.length > 0) {
         if ($curPath -ne $Path) {
             Move-Directory -Source $curPath -Destination $Path
-            New-KnownFolderExpandPath -KnownFolder $KnownFolder -Path $Path
+            Set-KnownFolderExpandPath -KnownFolder $KnownFolder -Path $Path -Create:$true
         }
     } else {
-        New-KnownFolderExpandPath -KnownFolder $KnownFolder -Path $Path
+        Set-KnownFolderExpandPath -KnownFolder $KnownFolder -Path $Path -Create:$true
     }
 }
 # SIG # Begin signature block
 # MIIgwgYJKoZIhvcNAQcCoIIgszCCIK8CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUXSk52MfDqmTH17FfWAp0vJr5
-# 9VWgghsdMIIGajCCBVKgAwIBAgIQAwGaAjr/WLFr1tXq5hfwZjANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU7yc4KWa7STw97mJm5Sy9jAVE
+# +gWgghsdMIIGajCCBVKgAwIBAgIQAwGaAjr/WLFr1tXq5hfwZjANBgkqhkiG9w0B
 # AQUFADBiMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
 # VQQLExB3d3cuZGlnaWNlcnQuY29tMSEwHwYDVQQDExhEaWdpQ2VydCBBc3N1cmVk
 # IElEIENBLTEwHhcNMTQxMDIyMDAwMDAwWhcNMjQxMDIyMDAwMDAwWjBHMQswCQYD
@@ -840,27 +815,27 @@ function Move-KnownFolderExpandedPath {
 # Y2VydC5vcmcxHDAaBgNVBAMTE0NBY2VydCBDbGFzcyAzIFJvb3QCAwLHvTAJBgUr
 # DgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMx
 # DAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFjAjBgkq
-# hkiG9w0BCQQxFgQUC3s1u7/7M3XYEkoa0T2FPCem+28wDQYJKoZIhvcNAQEBBQAE
-# ggIA1lIDF0wIqmq5XNfv/R2qrm/vIZQJ6N142jY+UYgfF6sspxUZOWH8mIT3ufHv
-# b3K0NCqPhUk77vYXOUvFpx5gAg33DinsXPnZdCU+Kf2FvgMw0c+DifGfvhQYfK6g
-# YPRuEs0QyOI4aQjh7IaZ1UxwThU5JfDSqrAtjDDFCGxkFjgxWpD2nZ6EnrMqpoaw
-# gMN3ysuWrx6kr870GiGI9jN4G0oDT4xf5iBnr8N/CoYu7Y1AyAgNbV0f7he5I2ts
-# xOJmCY6c8Gu1TcIKIGYrSLpTH5bizWlAANsKdIi2zBg2otSEzbGF6UTfUNSZcEnV
-# w4tv01l/RLGArgEfJYkzsrpwcVX+DvuZhuvHHQ2yT3DHhA+JT0JY/r37U36stYVL
-# 64wcdXhGANNUTjwXmDIV46Qdc7CLOnMho3hcsfj5ZIuujyvKECN/j3Z/VsVdT7RC
-# Cr9Dd+EFwhbref4ZFTz1sPqP+bi1TEdIIfVGmVtsN37mntHD8abET27QyIhYltjO
-# OXwVjAqjBkhYLhZcevz1PoE87yHsO5CD5c7dkynxgSomI15/SowiWJ108NCPjbkB
-# eRMho9lO872/w6k3UrVmzMmU1j8Y71uGKRbvPFbBJVvgHbqkAt6LiLNMBkdlMfNC
-# c4qa4Dov6hgGT+y74cFQl0Y2aEczagL+a/ZQQRaSWA+xzouhggIPMIICCwYJKoZI
+# hkiG9w0BCQQxFgQU3/mri3jtaFpIlDiyQCjxW+PnPwMwDQYJKoZIhvcNAQEBBQAE
+# ggIAvwwHla/Qo0Q6k+aj2e85PcpMV9FOPeXmJzv4ud0g8HFQZ61wMIP9I1M2DqWp
+# BqhXBpuaIY3ZrJEIJmmIxxE4t6SPA1KkNJospCWMFS9DZ3FO7HFMYJ+W75V0jj6W
+# WXvybaXnFLiIbr5g6D+QSyZnuPvyXhHB3IPEn8XFo84rsijvjnzqZVEuNW95x2nN
+# m8dzOEq0cVEYbJ6UFS6aSlMTxtOxjtMdcRgjoD5/7trsVHdtFFCw0Rr0ygsV4DHi
+# ddTmp3jZYbswzSTTSryNsodVqYlx/uTSen3UuVCuj3QHp3+MTVFxUiJgAKHCjf2N
+# BJGZXbwDK1j6OyFPQRWhldNdm2FHGcaR6leUwOC8zv7VzE+PupKH/1QmdFdA++rm
+# h262s1nsHt9wI9tP5zC6XsdDvsyIHJ7E9OKilkkKUSy/0BSTuPQ6YzNlgVx9y4IQ
+# ZBSiR4IO7uY/n/Pjb+MS2YHty1krQLbMuq+m//bmbexR5AHzbOVEVDkQgmKq5aGd
+# sM3ACzVHikoLB5f6B1nzZ/blG3CfDtKA2mkBzkpIKM/zb8bodPQW9dh+c5LpYsxJ
+# c5QuUpO7XGuxmUHBPGbnHmJPpc+CzyUtVHo6pkHF/ZPz3UOiaK1OETTXeLgIkjQj
+# 9HCabgXbS92Aczap5w+zC4cIpPiMo1McVMn1tYju0twVG3ihggIPMIICCwYJKoZI
 # hvcNAQkGMYIB/DCCAfgCAQEwdjBiMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGln
 # aUNlcnQgSW5jMRkwFwYDVQQLExB3d3cuZGlnaWNlcnQuY29tMSEwHwYDVQQDExhE
 # aWdpQ2VydCBBc3N1cmVkIElEIENBLTECEAMBmgI6/1ixa9bV6uYX8GYwCQYFKw4D
 # AhoFAKBdMBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8X
-# DTE4MDkwOTE3NTc0NFowIwYJKoZIhvcNAQkEMRYEFOSW+sqeDGnRNMj3k7k8NfqI
-# lMfRMA0GCSqGSIb3DQEBAQUABIIBADU8K/cuVn9AJy8UKzrmh1Q2D7zFkgcSul/V
-# wYq8WwnXuc41PkuhJJtEhLx0WqjEFgKR8uwDqii6ZU5lpU5+bGIx1/D0gk9IUA5g
-# f0LU/w6520oNfGqLmvWGz4nHz0SdWJvvx8uI5YPZuYx/Y7ro7dVYOjwdzBRpt37W
-# G3pb1+LE6METMG10D2hwgbY3x31lDdp8ZPwgqrKX4venQEDlCrV+7u/N4FlA0t61
-# 0DN5E98fj+nFK5MYQSILjn6mLXEiV0fTqs9hDFoY2JWF9oWfSYii6HR3l6EEjQJJ
-# MdipbaHK8sU7ckrOa5xBoPF5jJwfuxEugjiMgckPGU5KzX2T/30=
+# DTE4MDkxMTE2NDMxN1owIwYJKoZIhvcNAQkEMRYEFNlrCwnjNSndECQ9TwXyvD83
+# RijDMA0GCSqGSIb3DQEBAQUABIIBAHjthf5ko5Y64WcxsfIpbZrO/MTgmW9XdheJ
+# xHiAIVtXGA6LskVr346Wzmq4A77MUb3f1JCUuvWDx4FSFoeRisjoObt1p4IC7ME2
+# p3S2rvJyF4EKkQLJ1EbIqIr5K+KCS/tPgX8An7GucQLbliwW6d3eDtBWXwJ+AuNq
+# 1gcwA7AUEKZT+MUUpKIerSxWYa3JAtZddb7lNcH9n8QPwTPMOVOXX/G6O8DGdhQH
+# HvLqEq48QUrjb7FmBk0oxulDVku/zMiXMqMYZMXWb97gOmiMZV8Tc4JR3jIfSPA/
+# PXoGdyMcT4JjYsEs/6RAsox+w8mojbsNmFHMYdv1p7mmyVt93dA=
 # SIG # End signature block

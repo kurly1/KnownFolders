@@ -9,7 +9,7 @@ $manifest = @{
     CmdletsToExport = ''
     VariablesToExport = ''
     AliasesToExport = ''
-    FunctionsToExport = @('Get-KnownFolderPath', 'Get-KnownFolderExpandedPath', 'Get-KnownFolderPathDefault', 'Get-KnownFolderExpandedPathDefault', 'Set-KnownFolderPath', 'Set-KnownFolderExpandedPath', 'New-KnownFolderPath', 'New-KnownFolderExpandedPath', 'Set-KnownFolderPathDefault', 'Move-KnownFolderPath', 'Move-KnownFolderExpandedPath')
+    FunctionsToExport = @('Get-KnownFolderPath', 'Get-KnownFolderExpandPath', 'Get-KnownFolderPathDefault', 'Get-KnownFolderExpandPathDefault', 'Set-KnownFolderPath', 'Set-KnownFolderExpandPath', 'Set-KnownFolderPathDefault', 'Move-KnownFolderPath', 'Move-KnownFolderExpandPath')
 }
 
 New-ModuleManifest @manifest
